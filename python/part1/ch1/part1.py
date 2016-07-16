@@ -18,7 +18,7 @@ _nbase = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
 _rbase = {0: 'A', 1: 'C', 2: 'G', 3: 'T'}
 
 
-def _pattern_to_number(pattern):
+def pattern_to_number(pattern):
     value = 0
 
     for ch in pattern:
@@ -27,7 +27,7 @@ def _pattern_to_number(pattern):
     return value
 
 
-def _number_to_pattern(number, k):
+def number_to_pattern(number, k):
     pattern = ['A' for _ in range(k)]
 
     idx = k - 1
@@ -43,7 +43,7 @@ def _computing_frequencies(text, k):
     freq = [0 for _ in range(0, 4 ** k)]
 
     for kmer in (text[idx:idx + k] for idx in range(0, len(text) - k + 1)):
-        num = _pattern_to_number(kmer)
+        num = pattern_to_number(kmer)
         freq[num] += 1
 
     return freq
@@ -52,11 +52,11 @@ def _computing_frequencies(text, k):
 def faster_frequent_words(text, k):
     freq = _computing_frequencies(text, k)
     max_count = max(freq)
-    return set((_number_to_pattern(num, k) for num, count in enumerate(freq) if count == max_count))
+    return set((number_to_pattern(num, k) for num, count in enumerate(freq) if count == max_count))
 
 
 def faster_frequent_words_by_sorting(text, k):
-    encoded_kmers = sorted([_pattern_to_number(text[idx:idx + k]) for idx in range(0, len(text) - k + 1)])
+    encoded_kmers = sorted([pattern_to_number(text[idx:idx + k]) for idx in range(0, len(text) - k + 1)])
     counts = [1 for _ in range(0, len(encoded_kmers))]
 
     for first, second in zip(enumerate(encoded_kmers), enumerate(encoded_kmers[1:], 1)):
@@ -64,7 +64,7 @@ def faster_frequent_words_by_sorting(text, k):
             counts[second[0]] += counts[first[0]]
 
     max_count = max(counts)
-    return set((_number_to_pattern(kmer, k) for kmer, count in zip(encoded_kmers, counts) if count == max_count))
+    return set((number_to_pattern(kmer, k) for kmer, count in zip(encoded_kmers, counts) if count == max_count))
 
 
 _complement = str.maketrans('ATGC', 'TACG')
@@ -99,7 +99,7 @@ def find_clumps_slow(genome, k, el, t):
     """
     genome_slices = (genome[idx:idx + el] for idx in range(0, len(genome) - el))
     frequencies = (_computing_frequencies(genome_slice, k) for genome_slice in genome_slices)
-    return set((_number_to_pattern(number, k) for frequency in frequencies
+    return set((number_to_pattern(number, k) for frequency in frequencies
                 for (number, freq_count) in enumerate(frequency) if freq_count >= t))
 
 
@@ -174,4 +174,4 @@ def find_clumps(genome, k, el, t):
         freq_count.inc_count(next)
         clumps.update(freq_count.kmers_in_clumps())
 
-    return set((_number_to_pattern(kmer, k) for kmer in clumps))
+    return set((number_to_pattern(kmer, k) for kmer in clumps))
